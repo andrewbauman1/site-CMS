@@ -1,9 +1,13 @@
 #!/bin/sh
 set -e
 
-echo "Running Prisma migrations as root..."
+echo "Fixing prisma directory permissions..."
+chown -R root:root /app/prisma
+
+echo "Running Prisma migrations..."
 cd /app
 npx prisma db push --accept-data-loss
 
-echo "Switching to nextjs user and starting server..."
+echo "Restoring permissions and starting server..."
+chown -R nextjs:nodejs /app/prisma
 exec su-exec nextjs node server.js
