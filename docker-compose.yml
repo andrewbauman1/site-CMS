@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${HOST_PORT:-3000}:${PORT:-3000}"
     depends_on:
       db:
         condition: service_healthy
@@ -42,6 +42,8 @@ services:
       CLOUDFLARE_DELIVERY_HASH: ${CLOUDFLARE_DELIVERY_HASH}
       CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID}
       CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+      PORT: ${PORT:-3000}
+      HOSTNAME: ${HOSTNAME:-127.0.0.1}
     networks:
       - app-network
 
