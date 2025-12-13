@@ -50,6 +50,5 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modul
 # PORT and HOSTNAME are set via docker-compose environment variables
 # Port exposure is handled by docker-compose ports mapping
 
-USER nextjs
-
+# Note: Don't set USER here - docker-compose command will handle it
 CMD ["node", "server.js"]
