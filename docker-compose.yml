@@ -20,6 +20,20 @@ services:
     networks:
       - app-network
 
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD}@db:${DB_PORT:-5432}/${DB_NAME:-site_backend}
+    command: sh -c "prisma db push --accept-data-loss && echo 'Migration complete!'"
+    networks:
+      - app-network
+    restart: "no"
+
   web:
     build:
       context: .
@@ -30,6 +44,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
       # Application binding
       PORT: ${PORT:-3000}

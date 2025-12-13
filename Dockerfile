@@ -47,11 +47,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 
-# Copy entrypoint script
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
 # PORT and HOSTNAME are set via docker-compose environment variables
 # Port exposure is handled by docker-compose ports mapping
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+USER nextjs
+
+CMD ["node", "server.js"]
