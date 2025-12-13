@@ -38,4 +38,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
+  trustHost: process.env.NEXTAUTH_TRUST_HOST === 'true',
 }
