@@ -234,7 +234,16 @@ export async function uploadPhotoToCloudflare(
     filename: data.result.filename,
     publicUrl: `https://imagedelivery.net/${deliveryHash}/${data.result.id}/public`,
     thumbnailUrl: `https://imagedelivery.net/${deliveryHash}/${data.result.id}/thumbnail`,
-    meta: metadata
+    meta: {
+      ratio: metadata.ratio,
+      orientation: metadata.orientation,
+      caption: metadata.caption,
+      alt: metadata.alt,
+      featured: metadata.featured,
+      albums: metadata.albums,
+      location: metadata.location,
+      datetime: metadata.datetime
+    }
   }
 }
 
