@@ -85,7 +85,7 @@ export default function PostsPage() {
     setEditTitle(post.title || '')
     setEditContent(post.content || '')
     setEditLayout(post.layout || 'default')
-    setEditFeatured(post.feature === '1' || post.feature === 1)
+    setEditFeatured(post.feature === '1')
   }
 
   const handleSave = async () => {
@@ -214,7 +214,7 @@ ${editContent}`
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
                       <CardTitle>{post.title || post.name}</CardTitle>
-                      {(post.feature === '1' || post.feature === 1) && (
+                      {post.feature === '1' && (
                         <Badge variant="secondary">Featured</Badge>
                       )}
                     </div>
