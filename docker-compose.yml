@@ -26,24 +26,29 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "${HOST_PORT:-3000}:${PORT:-3000}"
+      - "3000:3000"
     depends_on:
       db:
         condition: service_healthy
     environment:
+      # Application binding
+      PORT: 3000
+      HOSTNAME: "127.0.0.1"
+      # Database
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD}@db:5432/${DB_NAME:-site_backend}
+      # NextAuth
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      # GitHub OAuth
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
       GITHUB_OWNER: ${GITHUB_OWNER}
       GITHUB_REPO: ${GITHUB_REPO}
       GITHUB_RESOURCES_REPO: ${GITHUB_RESOURCES_REPO}
+      # Cloudflare
       CLOUDFLARE_DELIVERY_HASH: ${CLOUDFLARE_DELIVERY_HASH}
       CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID}
       CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
-      PORT: ${PORT:-3000}
-      HOSTNAME: ${HOSTNAME:-127.0.0.1}
     networks:
       - app-network
 

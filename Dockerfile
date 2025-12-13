@@ -45,9 +45,7 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 USER nextjs
 
-EXPOSE 3000
-
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+# PORT and HOSTNAME are set via docker-compose environment variables
+# Port exposure is handled by docker-compose ports mapping
 
 CMD ["node", "server.js"]
