@@ -54,6 +54,42 @@ export function NewPostModal({ isOpen, onClose, onSuccess }: NewPostModalProps) 
     onClose()
   }
 
+  const handleSaveDraft = async () => {
+    if (!title.trim() && !content.trim()) {
+      alert('Please enter at least a title or content')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch('/api/drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'POST',
+          title,
+          content,
+          tags: tags.split(',').map(t => t.trim()).filter(Boolean).join(','),
+          language: layout
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to save draft')
+      }
+
+      alert('Draft saved successfully!')
+      resetForm()
+      onSuccess?.()
+      onClose()
+    } catch (error: any) {
+      alert(`Error: ${error.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handlePublish = async () => {
     if (!title.trim() || !content.trim()) {
       alert('Please enter title and content')
@@ -185,6 +221,13 @@ export function NewPostModal({ isOpen, onClose, onSuccess }: NewPostModalProps) 
                 {loading ? 'Publishing...' : 'Publish Post'}
               </Button>
               <Button
+                onClick={handleSaveDraft}
+                disabled={loading}
+                variant="secondary"
+              >
+                {loading ? 'Saving...' : 'Save as Draft'}
+              </Button>
+              <Button
                 onClick={handleClose}
                 disabled={loading}
                 variant="outline"
@@ -291,6 +334,13 @@ export function NewPostModal({ isOpen, onClose, onSuccess }: NewPostModalProps) 
               className="flex-1"
             >
               {loading ? 'Publishing...' : 'Publish Post'}
+            </Button>
+            <Button
+              onClick={handleSaveDraft}
+              disabled={loading}
+              variant="secondary"
+            >
+              {loading ? 'Saving...' : 'Save as Draft'}
             </Button>
             <Button
               onClick={handleClose}

@@ -66,6 +66,42 @@ export function NewNoteModal({ isOpen, onClose, onSuccess }: NewNoteModalProps) 
     onClose()
   }
 
+  const handleSaveDraft = async () => {
+    if (!content.trim()) {
+      alert('Please enter some content')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch('/api/drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'NOTE',
+          content,
+          tags: tags.split(',').map(t => t.trim()).filter(Boolean).join(','),
+          language,
+          location: location || manualLocation || undefined
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to save draft')
+      }
+
+      alert('Draft saved successfully!')
+      resetForm()
+      onSuccess?.()
+      onClose()
+    } catch (error: any) {
+      alert(`Error: ${error.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handlePublish = async () => {
     if (!content.trim()) {
       alert('Please enter some content')
@@ -214,6 +250,13 @@ export function NewNoteModal({ isOpen, onClose, onSuccess }: NewNoteModalProps) 
               className="flex-1"
             >
               {loading ? 'Publishing...' : 'Publish Note'}
+            </Button>
+            <Button
+              onClick={handleSaveDraft}
+              disabled={loading}
+              variant="secondary"
+            >
+              {loading ? 'Saving...' : 'Save as Draft'}
             </Button>
             <Button
               onClick={handleClose}
