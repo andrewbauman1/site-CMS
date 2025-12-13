@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
 
@@ -14,9 +14,10 @@ export async function GET(
   }
 
   try {
+    const { id } = await params
     const draft = await prisma.draft.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id
       }
     })
@@ -36,7 +37,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
 
@@ -45,11 +46,12 @@ export async function PUT(
   }
 
   try {
+    const { id } = await params
     const data = await request.json()
 
     const draft = await prisma.draft.update({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id
       },
       data: {
@@ -69,7 +71,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
 
@@ -78,9 +80,10 @@ export async function DELETE(
   }
 
   try {
+    const { id } = await params
     await prisma.draft.delete({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id
       }
     })
