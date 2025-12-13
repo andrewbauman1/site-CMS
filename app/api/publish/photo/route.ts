@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     const featuredStr = formData.get('featured') as string
     const datetimeStr = formData.get('datetime') as string
     const ratioStr = formData.get('ratio') as string
-    const orientation = formData.get('orientation') as string
+    const orientationStr = formData.get('orientation') as string
 
     // Validate file
     if (!file) {
@@ -54,6 +54,12 @@ export async function POST(request: Request) {
     const featured = featuredStr === 'true'
     const ratio = parseFloat(ratioStr)
     const datetime = datetimeStr || undefined
+
+    // Validate orientation
+    const orientation = orientationStr as 'landscape' | 'portrait' | 'square'
+    if (!['landscape', 'portrait', 'square'].includes(orientation)) {
+      return NextResponse.json({ error: 'Invalid orientation value' }, { status: 400 })
+    }
 
     // Upload to Cloudflare Images
     const uploadResult = await uploadPhotoToCloudflare(file, {
