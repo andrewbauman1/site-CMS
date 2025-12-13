@@ -183,7 +183,7 @@ export async function uploadPhotoToCloudflare(
     featured: boolean
     datetime?: string
     ratio: number
-    orientation: string
+    orientation: 'landscape' | 'portrait' | 'square'
   }
 ): Promise<PhotoUploadResult> {
   const formData = new FormData()
