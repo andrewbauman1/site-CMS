@@ -40,7 +40,7 @@ export function usePhotoUpload() {
     console.log(`${validFiles.length} valid files to process`)
 
     // Process each valid file with error handling
-    const newDraftsPromises = validFiles.map(async (file) => {
+    const newDraftsPromises = validFiles.map(async (file): Promise<PhotoDraft | null> => {
       try {
         const preview = URL.createObjectURL(file)
         const dimensionsData = await getImageDimensions(file)
