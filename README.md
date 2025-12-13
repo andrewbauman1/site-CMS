@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Site Backend
 
-## Getting Started
+Backend for **[drewsiph.dev](https://drewsiph.dev)**  
+Repo: https://github.com/andrewbauman1/site
 
-First, run the development server:
+A small, purpose-built CMS for managing Jekyll content via GitHub. Provides a web interface to draft and publish notes, posts, stories, and media, with GitHub as the source of truth.
+
+
+## Features
+
+- Create and publish content (notes, posts, stories)
+- Draft storage with PostgreSQL
+- GitHub Actions–based publishing
+- Cloudflare Images & Stream uploads
+- GitHub OAuth authentication
+- Docker-ready for self-hosting
+
+
+## Prerequisites
+
+- Node.js 20+ (for local development)
+- Docker & Docker Compose (for deployment)
+- PostgreSQL 16+ (or use Docker Compose)
+- GitHub OAuth App
+- Cloudflare Account (for media uploads)
+
+## Quick Start
+
+### 1. Clone and Install
+
+```bash
+cd /path/to/site-backend
+npm install
+```
+
+### 2. Environment Configuration
+
+Copy the example environment file and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your configuration:
+
+- **Database**: Set `DATABASE_URL` to your PostgreSQL connection string
+- **NextAuth**: Generate a secret with `openssl rand -base64 32`
+- **GitHub**: Create an OAuth app at https://github.com/settings/developers
+  - Set callback URL to `http://localhost:3000/api/auth/callback/github`
+  - Add `repo` and `workflow` scopes
+- **Cloudflare**: Get your account ID and API token from Cloudflare dashboard
+
+### 3. Database Setup
+
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate deploy
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Docker Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Using Docker Compose (Recommended for Homeserver)
 
-## Learn More
+1. **Configure Environment**
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cp .env.example .env
+# Edit .env with your production values
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Build and Start Services**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+docker-compose up -d
+```
 
-## Deploy on Vercel
+3. **Run Database Migrations**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+docker-compose exec web npx prisma migrate deploy
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **View Logs**
+
+```bash
+docker-compose logs -f web
+```
+
+The app will be available at http://localhost:3000
+
+## Troubleshooting
+
+### Database Connection Issues
+
+- Ensure PostgreSQL is running
+- Check `DATABASE_URL` in `.env`
+- For Docker: ensure `db` service is healthy
+
+### GitHub OAuth Not Working
+
+- Verify Client ID and Secret in `.env`
+- Check callback URL matches GitHub OAuth app settings
+
+### Media Upload Fails
+
+- Verify Cloudflare Account ID and API Token
+- Check file size limits (default: 15MB)
+
+## License
+
+This project is for personal use only.
