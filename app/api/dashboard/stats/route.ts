@@ -13,7 +13,13 @@ interface DashboardStats {
     photoAlbums: number
   }
   recent: {
-    notes: Array<{ name: string; path: string; date: string }>
+    notes: Array<{
+      name: string
+      path: string
+      date: string
+      content: string
+      tags: string[]
+    }>
     posts: Array<{ name: string; path: string; date: string }>
     stories: Array<{ id: string; uploaded: string; meta: any; thumbnailUrl?: string }>
     photos: Array<{ id: string; uploaded: string; meta: any; thumbnailUrl: string }>
@@ -171,11 +177,87 @@ export async function GET() {
       return new Date().toISOString().split('T')[0]
     }
 
-    const recentNotes = notes
+    // Parse note content and extract frontmatter
+    const parseNoteContent = (content: string): { content: string; tags: string[] } => {
+      // Match frontmatter (content between --- markers)
+      const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)/)
+
+      if (!frontmatterMatch) {
+        return { content: content.trim(), tags: [] }
+      }
+
+      const frontmatter = frontmatterMatch[1]
+      const noteContent = frontmatterMatch[2].trim()
+
+      // Extract tags from frontmatter (supports both inline and YAML array formats)
+      const tags: string[] = []
+
+      // Try inline format: tags: [tag1, tag2]
+      const inlineTagsMatch = frontmatter.match(/^tags:\s*\[(.*?)\]/m)
+      if (inlineTagsMatch) {
+        tags.push(...inlineTagsMatch[1].split(',').map(t => t.trim().replace(/['"]/g, '')).filter(Boolean))
+      } else {
+        // Try YAML array format: tags:\n  - tag1\n  - tag2
+        const yamlTagsMatch = frontmatter.match(/^tags:\s*\n((?:\s*-\s*.+\n?)+)/m)
+        if (yamlTagsMatch) {
+          const tagLines = yamlTagsMatch[1].match(/^\s*-\s*(.+)$/gm)
+          if (tagLines) {
+            tags.push(...tagLines.map(line => line.replace(/^\s*-\s*/, '').trim()).filter(Boolean))
+          }
+        }
+      }
+
+      return { content: noteContent, tags }
+    }
+
+    // Get top 5 recent notes sorted by date
+    const topRecentNotes = notes
       .map(n => ({ ...n, extractedDate: extractDateFromFilename(n.name) }))
       .sort((a, b) => new Date(b.extractedDate).getTime() - new Date(a.extractedDate).getTime())
       .slice(0, 5)
-      .map(n => ({ name: n.name, path: n.path, date: n.extractedDate }))
+
+    // Fetch content for each recent note
+    const recentNotesWithContent = await Promise.all(
+      topRecentNotes.map(async (note) => {
+        try {
+          const contentRes = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/contents/${note.path}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/vnd.github+json',
+              }
+            }
+          )
+          if (contentRes.ok) {
+            const contentData = await contentRes.json()
+            const fileContent = Buffer.from(contentData.content, 'base64').toString('utf-8')
+            const { content, tags } = parseNoteContent(fileContent)
+
+            return {
+              name: note.name,
+              path: note.path,
+              date: note.extractedDate,
+              content: content.substring(0, 200), // Limit to first 200 chars for preview
+              tags
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to fetch content for note ${note.name}:`, error)
+        }
+
+        // Fallback if content fetch fails
+        return {
+          name: note.name,
+          path: note.path,
+          date: note.extractedDate,
+          content: '',
+          tags: []
+        }
+      })
+    )
+
+    const recentNotes = recentNotesWithContent
 
     const recentPosts = posts
       .map(p => ({ ...p, extractedDate: extractDateFromFilename(p.name) }))

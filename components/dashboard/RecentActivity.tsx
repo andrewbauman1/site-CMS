@@ -14,7 +14,13 @@ import Link from 'next/link'
 
 interface RecentActivityProps {
   recent: {
-    notes: Array<{ name: string; path: string; date: string }>
+    notes: Array<{
+      name: string
+      path: string
+      date: string
+      content: string
+      tags: string[]
+    }>
     posts: Array<{ name: string; path: string; date: string }>
     stories: Array<{ id: string; uploaded: string; meta: any; thumbnailUrl?: string }>
     photos: Array<{ id: string; uploaded: string; meta: any; thumbnailUrl: string }>
@@ -27,12 +33,14 @@ type ActivityItem = {
   date: Date
   title: string
   subtitle?: string
+  filename?: string
+  tags?: string[]
   thumbnailUrl?: string
   href?: string
 }
 
 export function RecentActivity({ recent, loading }: RecentActivityProps) {
-  const [dateFilter, setDateFilter] = useState<string>('all')
+  const [dateFilter, setDateFilter] = useState<string>('7days')
   const [typeFilter, setTypeFilter] = useState<string>('all')
 
   // Combine all items into a unified timeline
@@ -40,7 +48,9 @@ export function RecentActivity({ recent, loading }: RecentActivityProps) {
     ...recent.notes.map(n => ({
       type: 'note' as const,
       date: new Date(n.date),
-      title: n.name.replace('.md', ''),
+      title: n.content || 'Empty note',
+      filename: n.name.replace('.md', ''),
+      tags: n.tags,
       href: '/notes'
     })),
     ...recent.posts.map(p => ({
@@ -241,17 +251,41 @@ export function RecentActivity({ recent, loading }: RecentActivityProps) {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium truncate">{item.title}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-medium line-clamp-2">{item.title}</p>
                   <Badge variant="secondary" className={getTypeColor(item.type)}>
                     {item.type}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <p className="text-xs text-muted-foreground">
                     {item.date.toLocaleDateString()}
                   </p>
-                  {item.subtitle && (
+                  {item.filename && (
+                    <>
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        {item.filename}
+                      </p>
+                    </>
+                  )}
+                  {item.tags && item.tags.length > 0 && (
+                    <>
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <div className="flex gap-1 flex-wrap">
+                        {item.tags.map((tag, idx) => (
+                          <Badge
+                            key={idx}
+                            variant="outline"
+                            className="text-xs px-1.5 py-0 h-5"
+                          >
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {item.subtitle && !item.filename && (
                     <>
                       <span className="text-xs text-muted-foreground">•</span>
                       <p className="text-xs text-muted-foreground truncate">
