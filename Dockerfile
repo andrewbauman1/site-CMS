@@ -33,9 +33,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install su-exec for user switching and Prisma globally
-RUN apk add --no-cache su-exec && \
-    npm install -g prisma@latest
+# Install dependencies (su-exec not needed anymore)
+RUN apk add --no-cache libc6-compat
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -50,5 +49,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modul
 # PORT and HOSTNAME are set via docker-compose environment variables
 # Port exposure is handled by docker-compose ports mapping
 
-# Note: Don't set USER here - docker-compose command will handle it
+USER nextjs
+
 CMD ["node", "server.js"]

@@ -20,6 +20,20 @@ services:
     networks:
       - app-network
 
+  init-db:
+    image: postgres:16-alpine
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./init-tables.sql:/init-tables.sql
+    command: psql -h db -U ${DB_USER:-postgres} -d ${DB_NAME:-site_backend} -f /init-tables.sql
+    networks:
+      - app-network
+    restart: "no"
+
   web:
     build:
       context: .
@@ -30,7 +44,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "prisma db push --accept-data-loss && su-exec nextjs node server.js"
     environment:
       # Application binding
       PORT: ${PORT:-3000}
