@@ -20,6 +20,7 @@ export async function GET() {
       settings = await prisma.settings.create({
         data: {
           userId: session.user.id,
+          theme: 'system',
           noteTags: [],
           hiddenStoryFeeds: []
         }
@@ -27,6 +28,7 @@ export async function GET() {
     }
 
     return NextResponse.json({
+      theme: settings.theme,
       noteTags: settings.noteTags,
       hiddenStoryFeeds: settings.hiddenStoryFeeds
     })
@@ -47,18 +49,23 @@ export async function PUT(request: Request) {
   }
 
   try {
-    const { noteTags, hiddenStoryFeeds } = await request.json()
+    const body = await request.json()
+    const { theme, noteTags, hiddenStoryFeeds } = body
+
+    // Build update object dynamically to only update provided fields
+    const updateData: any = {}
+    if (theme !== undefined) updateData.theme = theme
+    if (noteTags !== undefined) updateData.noteTags = noteTags
+    if (hiddenStoryFeeds !== undefined) updateData.hiddenStoryFeeds = hiddenStoryFeeds
 
     const settings = await prisma.settings.upsert({
       where: { userId: session.user.id },
-      update: {
-        noteTags,
-        hiddenStoryFeeds
-      },
+      update: updateData,
       create: {
         userId: session.user.id,
-        noteTags,
-        hiddenStoryFeeds
+        theme: theme || 'system',
+        noteTags: noteTags || [],
+        hiddenStoryFeeds: hiddenStoryFeeds || []
       }
     })
 
