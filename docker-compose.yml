@@ -30,7 +30,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "npx prisma db push --accept-data-loss && node server.js"
     environment:
       # Application binding
       PORT: ${PORT:-3000}
