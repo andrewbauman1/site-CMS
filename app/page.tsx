@@ -16,7 +16,7 @@ interface DashboardData {
     photoAlbums: number
   }
   recent: {
-    notes: Array<{ name: string; path: string; date: string }>
+    notes: Array<{ name: string; path: string; date: string; content: string; tags: string[] }>
     posts: Array<{ name: string; path: string; date: string }>
     stories: Array<{ id: string; uploaded: string; meta: any; thumbnailUrl?: string }>
     photos: Array<{ id: string; uploaded: string; meta: any; thumbnailUrl: string }>
