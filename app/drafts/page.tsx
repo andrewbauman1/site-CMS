@@ -1,11 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface Draft {
   id: string
@@ -22,6 +29,10 @@ export default function DraftsPage() {
   const router = useRouter()
   const [drafts, setDrafts] = useState<Draft[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Filter and sort states
+  const [filterType, setFilterType] = useState<string>('all')
+  const [sortOrder, setSortOrder] = useState<string>('updated')
 
   useEffect(() => {
     if (session) {
@@ -76,6 +87,32 @@ export default function DraftsPage() {
     }
   }
 
+  // Filter and sort drafts
+  const filteredAndSortedDrafts = useMemo(() => {
+    let filtered = [...drafts]
+
+    // Filter by type
+    if (filterType !== 'all') {
+      filtered = filtered.filter(draft => draft.type === filterType)
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortOrder) {
+        case 'updated':
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        case 'created':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        default:
+          return 0
+      }
+    })
+
+    return filtered
+  }, [drafts, filterType, sortOrder])
+
   if (!session) {
     return <div>Please sign in</div>
   }
@@ -93,15 +130,49 @@ export default function DraftsPage() {
         </p>
       </div>
 
-      {drafts.length === 0 ? (
+      {/* Filters */}
+      {drafts.length > 0 && (
+        <div className="mb-6 flex flex-wrap gap-4 justify-end">
+          <div className="w-full sm:w-auto sm:min-w-[200px]">
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="NOTE">Notes</SelectItem>
+                <SelectItem value="POST">Posts</SelectItem>
+                <SelectItem value="STORY">Stories</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-full sm:w-auto sm:min-w-[200px]">
+            <Select value={sortOrder} onValueChange={setSortOrder}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="updated">Recently Updated</SelectItem>
+                <SelectItem value="created">Recently Created</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+
+      {filteredAndSortedDrafts.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No drafts yet</p>
+            <p className="text-muted-foreground">
+              {drafts.length === 0 ? 'No drafts yet' : 'No drafts match the selected filters'}
+            </p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
-          {drafts.map((draft) => (
+          {filteredAndSortedDrafts.map((draft) => (
             <Card key={draft.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">

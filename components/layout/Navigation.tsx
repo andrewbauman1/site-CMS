@@ -10,8 +10,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { signOut, useSession } from 'next-auth/react'
-import { PlusCircle, Settings } from 'lucide-react'
+import { PlusCircle, Settings, Menu } from 'lucide-react'
 import { NewNoteModal } from '@/components/modals/NewNoteModal'
 import { NewPostModal } from '@/components/modals/NewPostModal'
 import { NewStoryModal } from '@/components/modals/NewStoryModal'
@@ -25,6 +32,7 @@ export function Navigation() {
   const router = useRouter()
   const { data: session } = useSession()
   const [openModal, setOpenModal] = useState<ModalType>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navItems = [
     { href: '/notes', label: 'Notes' },
@@ -37,6 +45,11 @@ export function Navigation() {
     return null
   }
 
+  const handleModalOpen = (modal: ModalType) => {
+    setOpenModal(modal)
+    setMobileMenuOpen(false)
+  }
+
   return (
     <>
       <nav className="border-b bg-background">
@@ -46,6 +59,121 @@ export function Navigation() {
               <Link href="/" className="text-xl font-bold">
                 drewsiph.dev
               </Link>
+
+              {/* Mobile Menu */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="md:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[280px]">
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-4 mt-6">
+                    {/* New Actions */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground px-2">Create New</p>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => handleModalOpen('status')}
+                      >
+                        <PlusCircle className="h-4 w-4 mr-2" />
+                        New Status
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => handleModalOpen('note')}
+                      >
+                        <PlusCircle className="h-4 w-4 mr-2" />
+                        New Note
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => handleModalOpen('post')}
+                      >
+                        <PlusCircle className="h-4 w-4 mr-2" />
+                        New Post
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => handleModalOpen('story')}
+                      >
+                        <PlusCircle className="h-4 w-4 mr-2" />
+                        New Story
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => handleModalOpen('photo')}
+                      >
+                        <PlusCircle className="h-4 w-4 mr-2" />
+                        New Photo
+                      </Button>
+                    </div>
+
+                    {/* Navigation Links */}
+                    <div className="space-y-2 pt-4 border-t">
+                      <p className="text-sm font-medium text-muted-foreground px-2">Navigate</p>
+                      {navItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`block px-2 py-2 rounded-md text-sm font-medium transition-colors ${
+                            pathname === item.href
+                              ? 'bg-accent text-foreground'
+                              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                      <Link
+                        href="/drafts"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`block px-2 py-2 rounded-md text-sm font-medium transition-colors ${
+                          pathname === '/drafts'
+                            ? 'bg-accent text-foreground'
+                            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                        }`}
+                      >
+                        Drafts
+                      </Link>
+                    </div>
+
+                    {/* User Actions */}
+                    <div className="space-y-2 pt-4 border-t">
+                      <p className="text-sm font-medium text-muted-foreground px-2">Account</p>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          setMobileMenuOpen(false)
+                          router.push('/settings')
+                        }}
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => signOut()}
+                      >
+                        Sign Out
+                      </Button>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              {/* Desktop Navigation */}
               <div className="hidden md:flex gap-4 items-center">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

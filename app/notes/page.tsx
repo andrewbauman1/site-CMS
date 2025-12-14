@@ -229,8 +229,8 @@ ${editContent}`
       </div>
 
       {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-4">
-        <div className="flex-1 min-w-[200px]">
+      <div className="mb-6 flex flex-wrap gap-4 justify-end">
+        <div className="w-full sm:w-auto sm:min-w-[200px]">
           <Select value={filterTag} onValueChange={setFilterTag}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by tag" />
@@ -244,7 +244,7 @@ ${editContent}`
           </Select>
         </div>
 
-        <div className="flex-1 min-w-[200px]">
+        <div className="w-full sm:w-auto sm:min-w-[200px]">
           <Select value={sortOrder} onValueChange={setSortOrder}>
             <SelectTrigger>
               <SelectValue placeholder="Sort by" />

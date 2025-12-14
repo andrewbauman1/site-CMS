@@ -240,8 +240,8 @@ export default function PhotosPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4">
-        <div className="flex-1 min-w-[200px]">
+      <div className="flex flex-wrap gap-4 justify-end">
+        <div className="w-full sm:w-auto sm:min-w-[200px]">
           <Select value={filterAlbum} onValueChange={setFilterAlbum}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by album" />
@@ -255,7 +255,7 @@ export default function PhotosPage() {
           </Select>
         </div>
 
-        <div className="flex-1 min-w-[200px]">
+        <div className="w-full sm:w-auto sm:min-w-[200px]">
           <Select value={filterFeatured} onValueChange={setFilterFeatured}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by featured" />
@@ -268,7 +268,7 @@ export default function PhotosPage() {
           </Select>
         </div>
 
-        <div className="flex-1 min-w-[200px]">
+        <div className="w-full sm:w-auto sm:min-w-[200px]">
           <Select value={sortOrder} onValueChange={setSortOrder}>
             <SelectTrigger>
               <SelectValue placeholder="Sort by" />

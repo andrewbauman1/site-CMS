@@ -12,7 +12,8 @@ export async function POST(req: Request) {
   try {
     const { statusText, date } = await req.json()
 
-    if (!statusText) {
+    // Allow empty statusText for clearing status
+    if (statusText === undefined || statusText === null) {
       return NextResponse.json({ error: 'Status text is required' }, { status: 400 })
     }
 
