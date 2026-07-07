@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import {
   Dialog,
   DialogContent,
@@ -13,9 +11,9 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useGeolocation } from '@/hooks/useGeolocation'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { Badge } from '@/components/ui/badge'
+import { useNoteForm } from '@/hooks/useNoteForm'
 
 interface NewNoteModalProps {
   isOpen: boolean
@@ -24,42 +22,20 @@ interface NewNoteModalProps {
 }
 
 export function NewNoteModal({ isOpen, onClose, onSuccess }: NewNoteModalProps) {
-  const { data: session } = useSession()
-  const { location, loading: geoLoading, getCurrentLocation } = useGeolocation()
-
-  const [content, setContent] = useState('')
-  const [tags, setTags] = useState('')
-  const [language, setLanguage] = useState('en')
-  const [manualLocation, setManualLocation] = useState('')
-  const [datetime, setDatetime] = useState(new Date())
-  const [loading, setLoading] = useState(false)
-  const [savedTags, setSavedTags] = useState<string[]>([])
-
-  useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const settingsResponse = await fetch('/api/settings')
-        if (settingsResponse.ok) {
-          const settings = await settingsResponse.json()
-          setSavedTags(settings.noteTags || [])
-        }
-      } catch (error) {
-        console.error('Failed to fetch saved tags:', error)
-      }
-    }
-
-    if (session && isOpen) {
-      fetchTags()
-    }
-  }, [session, isOpen])
-
-  const resetForm = () => {
-    setContent('')
-    setTags('')
-    setLanguage('en')
-    setManualLocation('')
-    setDatetime(new Date())
-  }
+  const form = useNoteForm()
+  const {
+    content, setContent,
+    tags, setTags,
+    language, setLanguage,
+    manualLocation, setManualLocation,
+    datetime, setDatetime,
+    loading,
+    savedTags,
+    location,
+    geoLoading,
+    getCurrentLocation,
+    resetForm,
+  } = form
 
   const handleClose = () => {
     resetForm()
@@ -67,80 +43,30 @@ export function NewNoteModal({ isOpen, onClose, onSuccess }: NewNoteModalProps) 
   }
 
   const handleSaveDraft = async () => {
-    if (!content.trim()) {
-      alert('Please enter some content')
-      return
-    }
-
-    setLoading(true)
     try {
-      const response = await fetch('/api/drafts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'NOTE',
-          content,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean).join(','),
-          language,
-          location: location || manualLocation || undefined
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to save draft')
-      }
-
+      await form.saveDraft()
       alert('Draft saved successfully!')
-      resetForm()
       onSuccess?.()
       onClose()
     } catch (error: any) {
       alert(`Error: ${error.message}`)
-    } finally {
-      setLoading(false)
     }
   }
 
   const handlePublish = async () => {
-    if (!content.trim()) {
-      alert('Please enter some content')
-      return
-    }
-
-    setLoading(true)
     try {
-      const response = await fetch('/api/publish/note', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-          language,
-          location: location || manualLocation || undefined,
-          datetime: datetime
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to publish note')
-      }
-
+      await form.publish()
       alert('Note published successfully!')
-      resetForm()
       onSuccess?.()
       onClose()
     } catch (error: any) {
       alert(`Error: ${error.message}`)
-    } finally {
-      setLoading(false)
     }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto note-panel">
         <DialogHeader>
           <DialogTitle>Create Note</DialogTitle>
           <DialogDescription>

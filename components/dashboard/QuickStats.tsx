@@ -1,5 +1,3 @@
-'use client'
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface QuickStatsProps {
@@ -12,10 +10,9 @@ interface QuickStatsProps {
     photos: number
     photoAlbums: number
   }
-  loading?: boolean
 }
 
-export function QuickStats({ stats, loading }: QuickStatsProps) {
+export function QuickStats({ stats }: QuickStatsProps) {
   const statCards = [
     {
       title: 'Notes Published',
@@ -52,7 +49,7 @@ export function QuickStats({ stats, loading }: QuickStatsProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {statCards.map((stat) => (
-        <Card key={stat.title}>
+        <Card key={stat.title} className="note-panel">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {stat.title}
@@ -61,11 +58,7 @@ export function QuickStats({ stats, loading }: QuickStatsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? (
-                <span className="animate-pulse">—</span>
-              ) : (
-                stat.value.toLocaleString()
-              )}
+              {stat.value.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {stat.description}
@@ -73,11 +66,7 @@ export function QuickStats({ stats, loading }: QuickStatsProps) {
             {'secondaryValue' in stat && stat.secondaryValue !== undefined && (
               <>
                 <div className="text-xl font-semibold mt-2">
-                  {loading ? (
-                    <span className="animate-pulse">—</span>
-                  ) : (
-                    stat.secondaryValue.toLocaleString()
-                  )}
+                  {stat.secondaryValue.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {stat.secondaryDescription}

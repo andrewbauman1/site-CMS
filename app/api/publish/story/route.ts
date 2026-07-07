@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadImageToCloudflare, uploadVideoToCloudflare, triggerStoryWorkflow } from '@/lib/cloudflare'
+import { assertValidMedia } from '@/lib/upload-validation'
+import { errorResponse } from '@/lib/api-error'
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
@@ -21,6 +23,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
+    try {
+      assertValidMedia(file)
+    } catch (validationError) {
+      return NextResponse.json(
+        { error: (validationError as Error).message },
+        { status: 400 }
+      )
+    }
+
     const isVideo = file.type.startsWith('video/')
 
     const uploadResult = isVideo
@@ -31,10 +42,7 @@ export async function POST(request: Request) {
     await triggerStoryWorkflow(session.accessToken, uploadResult)
 
     return NextResponse.json(uploadResult)
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Failed to upload story' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return errorResponse(error, 'Failed to upload story')
   }
 }

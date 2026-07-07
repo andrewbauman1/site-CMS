@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import {
   Dialog,
   DialogContent,
@@ -13,9 +11,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useMediaUpload } from '@/hooks/useMediaUpload'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { TagSelector } from '@/components/tag-selector'
+import { useStoryForm } from '@/hooks/useStoryForm'
 
 interface NewStoryModalProps {
   isOpen: boolean
@@ -24,48 +22,19 @@ interface NewStoryModalProps {
 }
 
 export function NewStoryModal({ isOpen, onClose, onSuccess }: NewStoryModalProps) {
-  const { data: session } = useSession()
-  const { file, preview, uploading, handleFileSelect, uploadFile } = useMediaUpload()
-
-  const [caption, setCaption] = useState('')
-  const [altText, setAltText] = useState('')
-  const [tags, setTags] = useState<string[]>([])
-  const [storyDate, setStoryDate] = useState(new Date())
-  const [availableTags, setAvailableTags] = useState<string[]>([])
-
-  useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const storiesResponse = await fetch('/api/github/stories')
-        if (storiesResponse.ok) {
-          const data = await storiesResponse.json()
-          const stories = data.stories || []
-
-          const tagSet = new Set<string>()
-          stories.forEach((story: any) => {
-            if (story.meta?.tags) {
-              story.meta.tags.forEach((tag: string) => tagSet.add(tag))
-            }
-          })
-
-          setAvailableTags(Array.from(tagSet).sort())
-        }
-      } catch (error) {
-        console.error('Failed to fetch story tags:', error)
-      }
-    }
-
-    if (session && isOpen) {
-      fetchTags()
-    }
-  }, [session, isOpen])
-
-  const resetForm = () => {
-    setCaption('')
-    setAltText('')
-    setTags([])
-    setStoryDate(new Date())
-  }
+  const form = useStoryForm()
+  const {
+    file,
+    preview,
+    uploading,
+    caption, setCaption,
+    altText, setAltText,
+    tags, setTags,
+    storyDate, setStoryDate,
+    availableTags,
+    handleFileChange,
+    resetForm,
+  } = form
 
   const handleClose = () => {
     resetForm()
@@ -73,21 +42,9 @@ export function NewStoryModal({ isOpen, onClose, onSuccess }: NewStoryModalProps
   }
 
   const handleUpload = async () => {
-    if (!file) {
-      alert('Please select a file')
-      return
-    }
-
     try {
-      await uploadFile({
-        caption,
-        altText,
-        tags,
-        datetime: storyDate
-      })
-
+      await form.upload()
       alert('Story uploaded successfully!')
-      resetForm()
       onSuccess?.()
       onClose()
     } catch (error: any) {
@@ -95,16 +52,9 @@ export function NewStoryModal({ isOpen, onClose, onSuccess }: NewStoryModalProps
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
-    if (selectedFile) {
-      handleFileSelect(selectedFile)
-    }
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto note-panel">
         <DialogHeader>
           <DialogTitle>Upload Story</DialogTitle>
           <DialogDescription>

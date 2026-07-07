@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface RecentActivityProps {
   recent: {
@@ -25,7 +26,6 @@ interface RecentActivityProps {
     stories: Array<{ id: string; uploaded: string; meta: any; thumbnailUrl?: string }>
     photos: Array<{ id: string; uploaded: string; meta: any; thumbnailUrl: string }>
   }
-  loading?: boolean
 }
 
 type ActivityItem = {
@@ -39,7 +39,7 @@ type ActivityItem = {
   href?: string
 }
 
-export function RecentActivity({ recent, loading }: RecentActivityProps) {
+export function RecentActivity({ recent }: RecentActivityProps) {
   const [dateFilter, setDateFilter] = useState<string>('7days')
   const [typeFilter, setTypeFilter] = useState<string>('all')
 
@@ -124,34 +124,10 @@ export function RecentActivity({ recent, loading }: RecentActivityProps) {
     }
   }
 
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Latest content across all types</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="flex items-center gap-3 animate-pulse">
-                <div className="h-12 w-12 bg-muted rounded" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-muted rounded w-3/4" />
-                  <div className="h-3 bg-muted rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
   if (recentActivity.length === 0) {
     const hasFilters = dateFilter !== 'all' || typeFilter !== 'all'
     return (
-      <Card>
+      <Card className="note-panel">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -197,7 +173,7 @@ export function RecentActivity({ recent, loading }: RecentActivityProps) {
   }
 
   return (
-    <Card>
+    <Card className="note-panel">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -240,9 +216,11 @@ export function RecentActivity({ recent, loading }: RecentActivityProps) {
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
             >
               {item.thumbnailUrl ? (
-                <img
+                <Image
                   src={item.thumbnailUrl}
                   alt={item.title}
+                  width={48}
+                  height={48}
                   className="h-12 w-12 object-cover rounded"
                 />
               ) : (

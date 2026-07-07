@@ -8,44 +8,28 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useGeolocation } from '@/hooks/useGeolocation'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { Badge } from '@/components/ui/badge'
+import { useNoteForm } from '@/hooks/useNoteForm'
 
 export default function NotePage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const { location, loading: geoLoading, getCurrentLocation } = useGeolocation()
+  const form = useNoteForm()
+  const {
+    content, setContent,
+    tags, setTags,
+    language, setLanguage,
+    manualLocation, setManualLocation,
+    datetime, setDatetime,
+    loading,
+    savedTags,
+    location,
+    geoLoading,
+    getCurrentLocation,
+  } = form
 
-  const [content, setContent] = useState('')
-  const [tags, setTags] = useState('')
-  const [language, setLanguage] = useState('en')
-  const [manualLocation, setManualLocation] = useState('')
-  const [datetime, setDatetime] = useState(new Date())
-  const [loading, setLoading] = useState(false)
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null)
-  const [savedTags, setSavedTags] = useState<string[]>([])
-
-  useEffect(() => {
-    // Fetch saved tags from settings
-    const fetchTags = async () => {
-      try {
-        const settingsResponse = await fetch('/api/settings')
-        if (settingsResponse.ok) {
-          const settings = await settingsResponse.json()
-          console.log('Settings response:', settings)
-          console.log('Note tags:', settings.noteTags)
-          setSavedTags(settings.noteTags || [])
-        }
-      } catch (error) {
-        console.error('Failed to fetch saved tags:', error)
-      }
-    }
-
-    if (session) {
-      fetchTags()
-    }
-  }, [session])
 
   useEffect(() => {
     // Check if we're editing a draft
@@ -66,68 +50,26 @@ export default function NotePage() {
       // Clear the localStorage after loading
       localStorage.removeItem('editDraft')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handlePublish = async () => {
-    if (!content.trim()) {
-      alert('Please enter some content')
-      return
-    }
-
-    setLoading(true)
     try {
-      const response = await fetch('/api/publish/note', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-          language,
-          location: location || manualLocation || undefined,
-          datetime: datetime
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to publish note')
-      }
-
+      await form.publish()
       alert('Note published successfully!')
       router.push('/')
     } catch (error: any) {
       alert(`Error: ${error.message}`)
-    } finally {
-      setLoading(false)
     }
   }
 
   const handleSaveDraft = async () => {
-    setLoading(true)
     try {
-      const url = editingDraftId ? `/api/drafts/${editingDraftId}` : '/api/drafts'
-      const method = editingDraftId ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'NOTE',
-          content,
-          tags,
-          language,
-          location: location || manualLocation || undefined
-        })
-      })
-
-      if (!response.ok) throw new Error('Failed to save draft')
-
+      await form.saveDraft(editingDraftId)
       alert('Draft saved!')
       router.push('/drafts')
     } catch (error: any) {
       alert(`Error: ${error.message}`)
-    } finally {
-      setLoading(false)
     }
   }
 

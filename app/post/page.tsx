@@ -10,8 +10,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { Badge } from '@/components/ui/badge'
 import { Maximize2, Minimize2 } from 'lucide-react'
+import { usePostForm } from '@/hooks/usePostForm'
 
 const MDEditor = dynamic(
   () => import('@uiw/react-md-editor'),
@@ -21,14 +21,17 @@ const MDEditor = dynamic(
 export default function PostPage() {
   const { data: session } = useSession()
   const router = useRouter()
+  const form = usePostForm()
+  const {
+    title, setTitle,
+    content, setContent,
+    tags, setTags,
+    layout, setLayout,
+    featured, setFeatured,
+    postDate, setPostDate,
+    loading,
+  } = form
 
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [tags, setTags] = useState('')
-  const [layout, setLayout] = useState('default')
-  const [featured, setFeatured] = useState(false)
-  const [postDate, setPostDate] = useState(new Date())
-  const [loading, setLoading] = useState(false)
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -50,68 +53,26 @@ export default function PostPage() {
       // Clear the localStorage after loading
       localStorage.removeItem('editDraft')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handlePublish = async () => {
-    if (!title.trim() || !content.trim()) {
-      alert('Please enter title and content')
-      return
-    }
-
-    setLoading(true)
     try {
-      const response = await fetch('/api/publish/post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          content,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-          date: postDate,
-          layout,
-          feature: featured ? 1 : undefined
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to publish post')
-      }
-
+      await form.publish()
       alert('Post published successfully!')
       router.push('/')
     } catch (error: any) {
       alert(`Error: ${error.message}`)
-    } finally {
-      setLoading(false)
     }
   }
 
   const handleSaveDraft = async () => {
-    setLoading(true)
     try {
-      const url = editingDraftId ? `/api/drafts/${editingDraftId}` : '/api/drafts'
-      const method = editingDraftId ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'POST',
-          title,
-          content,
-          tags
-        })
-      })
-
-      if (!response.ok) throw new Error('Failed to save draft')
-
+      await form.saveDraft(editingDraftId)
       alert('Draft saved!')
       router.push('/drafts')
     } catch (error: any) {
       alert(`Error: ${error.message}`)
-    } finally {
-      setLoading(false)
     }
   }
 

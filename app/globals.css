@@ -6,16 +6,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
+  --font-sans: var(--font-schibsted);
+  --font-serif: var(--font-fraunces);
+  --font-mono: var(--font-plex-mono);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -47,17 +40,17 @@
   --radius: 0.625rem;
 
   /* Website color scheme - Light Mode */
-  --backgroundColor: #FEFDFB;
+  --backgroundColor: #F2EFE9;
   --textColor: #1C1C1C;
   --secondaryTextColor: #4F4F4F;
-  --mutedTextColor: #6E7B75;
-  --subtleBackgroundColor: #E4E7E2;
+  --mutedTextColor: #4C5951;
+  --subtleBackgroundColor: #C9CFC7;
   --heartedBackgroundColor: #F6E8E2;
   --selectionBackgroundColor: #D6D9EB;
-  --linkColor: #FF8C6B;
-  --activeColor: #BA5A89;
-  --borderColor: #E0E0E0;
-  --hrColor: #D8D8D8;
+  --linkColor: #B04723;
+  --activeColor: #A44E0A;
+  --borderColor: #C5C5BF;
+  --hrColor: #C5C5BF;
   --langBackgroundColor: #F0F0EE;
   --langShadowColor: rgba(0,0,0,0.08);
   --logoColor: #333333;
@@ -67,37 +60,29 @@
   --gradient-secondary: linear-gradient(90deg, #FF8C6B 0%, #9370DB 100%);
 
   /* Tailwind compatibility - mapped to website colors */
-  --background: #FEFDFB;
+  --background: #F2EFE9;
   --foreground: #1C1C1C;
-  --card: #FEFDFB;
+  --card: #F2EFE9;
   --card-foreground: #1C1C1C;
-  --popover: #FEFDFB;
+  --popover: #F2EFE9;
   --popover-foreground: #1C1C1C;
-  --primary: #FF8C6B;
-  --primary-foreground: #FEFDFB;
-  --secondary: #E4E7E2;
+  --primary: #A44E0A;
+  --primary-foreground: #F2EFE9;
+  --secondary: #C9CFC7;
   --secondary-foreground: #1C1C1C;
-  --muted: #E4E7E2;
-  --muted-foreground: #6E7B75;
+  --muted: #C9CFC7;
+  --muted-foreground: #4C5951;
   --accent: #F6E8E2;
   --accent-foreground: #1C1C1C;
   --destructive: #BA5A89;
-  --border: #E0E0E0;
-  --input: #E0E0E0;
-  --ring: #FF8C6B;
+  --border: #C5C5BF;
+  --input: #C5C5BF;
+  --ring: #B04723;
   --chart-1: #FFB74D;
   --chart-2: #FF8C6B;
   --chart-3: #BA5AD3;
   --chart-4: #9370DB;
   --chart-5: #85b6a6;
-  --sidebar: #FEFDFB;
-  --sidebar-foreground: #1C1C1C;
-  --sidebar-primary: #FF8C6B;
-  --sidebar-primary-foreground: #FEFDFB;
-  --sidebar-accent: #E4E7E2;
-  --sidebar-accent-foreground: #1C1C1C;
-  --sidebar-border: #E0E0E0;
-  --sidebar-ring: #FF8C6B;
 }
 
 .dark {
@@ -110,7 +95,7 @@
   --heartedBackgroundColor: #884A3D;
   --selectionBackgroundColor: #3A5E5A;
   --linkColor: #85b6a6;
-  --activeColor: #BA5A49;
+  --activeColor: #e8a06e;
   --borderColor: #3A4B49;
   --hrColor: #666666;
   --langBackgroundColor: #2c2c2c;
@@ -124,11 +109,11 @@
   /* Tailwind compatibility - mapped to website dark colors */
   --background: #204248;
   --foreground: #E5E1DC;
-  --card: #2A3A38;
+  --card: #204248;
   --card-foreground: #E5E1DC;
-  --popover: #2A3A38;
+  --popover: #204248;
   --popover-foreground: #E5E1DC;
-  --primary: #85b6a6;
+  --primary: #e8a06e;
   --primary-foreground: #204248;
   --secondary: #2A3A38;
   --secondary-foreground: #E5E1DC;
@@ -145,14 +130,6 @@
   --chart-3: #BA5AD3;
   --chart-4: #9370DB;
   --chart-5: #85b6a6;
-  --sidebar: #2A3A38;
-  --sidebar-foreground: #E5E1DC;
-  --sidebar-primary: #85b6a6;
-  --sidebar-primary-foreground: #204248;
-  --sidebar-accent: #3A5E5A;
-  --sidebar-accent-foreground: #E5E1DC;
-  --sidebar-border: #3A4B49;
-  --sidebar-ring: #85b6a6;
 }
 
 @layer base {
@@ -161,5 +138,30 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+.note-panel {
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background-image: linear-gradient(135deg, rgba(255, 183, 77, 0.05) 0%, rgba(186, 85, 211, 0.05) 100%);
+}
+
+.dark .note-panel {
+  background-image: linear-gradient(135deg, rgba(255, 183, 77, 0.03) 0%, rgba(186, 85, 211, 0.03) 100%);
+}
+
+.photo-glow {
+  transition: box-shadow 0.3s ease;
+}
+
+.photo-glow:hover {
+  box-shadow: 0 0 22px rgba(255, 140, 107, 0.35), 0 0 42px rgba(186, 90, 211, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-glow {
+    transition: none;
   }
 }

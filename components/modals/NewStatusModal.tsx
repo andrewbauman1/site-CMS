@@ -135,7 +135,7 @@ export function NewStatusModal({ isOpen, onClose, onSuccess }: NewStatusModalPro
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl note-panel">
         <DialogHeader>
           <DialogTitle>Set Status</DialogTitle>
           <DialogDescription>

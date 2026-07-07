@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadPhotoToCloudflare, triggerPhotoWorkflow } from '@/lib/cloudflare'
+import { assertValidImage } from '@/lib/upload-validation'
+import { errorResponse } from '@/lib/api-error'
 
 /**
  * POST /api/publish/photo
@@ -32,6 +34,15 @@ export async function POST(request: Request) {
     // Validate file
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    }
+
+    try {
+      assertValidImage(file)
+    } catch (validationError) {
+      return NextResponse.json(
+        { error: (validationError as Error).message },
+        { status: 400 }
+      )
     }
 
     // Validate alt text (required for accessibility)
@@ -77,27 +88,7 @@ export async function POST(request: Request) {
     await triggerPhotoWorkflow(session.accessToken, uploadResult)
 
     return NextResponse.json(uploadResult)
-  } catch (error: any) {
-    console.error('Photo upload failed:', error)
-
-    // Provide more specific error messages
-    if (error.message.includes('Cloudflare')) {
-      return NextResponse.json(
-        { error: `Cloudflare upload failed: ${error.message}` },
-        { status: 500 }
-      )
-    }
-
-    if (error.message.includes('GitHub')) {
-      return NextResponse.json(
-        { error: `GitHub workflow trigger failed: ${error.message}` },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json(
-      { error: error.message || 'Upload failed' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return errorResponse(error, 'Upload failed')
   }
 }

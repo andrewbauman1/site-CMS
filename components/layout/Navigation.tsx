@@ -18,7 +18,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { signOut, useSession } from 'next-auth/react'
-import { PlusCircle, Settings, Menu } from 'lucide-react'
+import { PlusCircle, Settings, Menu, Sun, Moon } from 'lucide-react'
+import { useTheme } from '@/components/ThemeProvider'
 import { NewNoteModal } from '@/components/modals/NewNoteModal'
 import { NewPostModal } from '@/components/modals/NewPostModal'
 import { NewStoryModal } from '@/components/modals/NewStoryModal'
@@ -31,6 +32,7 @@ export function Navigation() {
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
+  const { resolvedTheme, setTheme } = useTheme()
   const [openModal, setOpenModal] = useState<ModalType>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -177,7 +179,7 @@ export function Navigation() {
               <div className="hidden md:flex gap-4 items-center">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="default" size="sm" className="gap-1">
+                    <Button variant="default" size="sm" className="gap-1 rounded-full">
                       <PlusCircle className="h-4 w-4" />
                       New
                     </Button>
@@ -202,34 +204,41 @@ export function Navigation() {
                 </DropdownMenu>
 
                 {navItems.map((item) => (
-                  <Link
+                  <Button
                     key={item.href}
-                    href={item.href}
-                    className={`text-sm font-medium transition-colors hover:text-primary ${
-                      pathname === item.href
-                        ? 'text-foreground'
-                        : 'text-muted-foreground'
-                    }`}
+                    variant="pill"
+                    size="sm"
+                    asChild
+                    className={pathname === item.href ? 'border-[var(--activeColor)] text-[var(--activeColor)]' : 'text-muted-foreground'}
                   >
-                    {item.label}
-                  </Link>
+                    <Link href={item.href}>{item.label}</Link>
+                  </Button>
                 ))}
 
-                <span className="text-muted-foreground">|</span>
-
-                <Link
-                  href="/drafts"
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    pathname === '/drafts'
-                      ? 'text-foreground'
-                      : 'text-muted-foreground'
-                  }`}
+                <Button
+                  variant="pill"
+                  size="sm"
+                  asChild
+                  className={pathname === '/drafts' ? 'border-[var(--activeColor)] text-[var(--activeColor)]' : 'text-muted-foreground'}
                 >
-                  Drafts
-                </Link>
+                  <Link href="/drafts">Drafts</Link>
+                </Button>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="rounded-full"
+                aria-label="Toggle dark mode"
+                onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              >
+                {resolvedTheme === 'dark' ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="text-sm">
@@ -251,40 +260,49 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* Modals */}
-      <NewStatusModal
-        isOpen={openModal === 'status'}
-        onClose={() => setOpenModal(null)}
-        onSuccess={() => {
-          window.location.reload()
-        }}
-      />
-      <NewNoteModal
-        isOpen={openModal === 'note'}
-        onClose={() => setOpenModal(null)}
-        onSuccess={() => {
-          // Optionally refresh the page or update data
-          window.location.reload()
-        }}
-      />
-      <NewPostModal
-        isOpen={openModal === 'post'}
-        onClose={() => setOpenModal(null)}
-        onSuccess={() => {
-          window.location.reload()
-        }}
-      />
-      <NewStoryModal
-        isOpen={openModal === 'story'}
-        onClose={() => setOpenModal(null)}
-        onSuccess={() => {
-          window.location.reload()
-        }}
-      />
-      <NewPhotoModal
-        isOpen={openModal === 'photo'}
-        onClose={() => setOpenModal(null)}
-      />
+      {/* Modals - lazy mounted, only rendered while open */}
+      {openModal === 'status' && (
+        <NewStatusModal
+          isOpen
+          onClose={() => setOpenModal(null)}
+          onSuccess={() => {
+            window.location.reload()
+          }}
+        />
+      )}
+      {openModal === 'note' && (
+        <NewNoteModal
+          isOpen
+          onClose={() => setOpenModal(null)}
+          onSuccess={() => {
+            window.location.reload()
+          }}
+        />
+      )}
+      {openModal === 'post' && (
+        <NewPostModal
+          isOpen
+          onClose={() => setOpenModal(null)}
+          onSuccess={() => {
+            window.location.reload()
+          }}
+        />
+      )}
+      {openModal === 'story' && (
+        <NewStoryModal
+          isOpen
+          onClose={() => setOpenModal(null)}
+          onSuccess={() => {
+            window.location.reload()
+          }}
+        />
+      )}
+      {openModal === 'photo' && (
+        <NewPhotoModal
+          isOpen
+          onClose={() => setOpenModal(null)}
+        />
+      )}
     </>
   )
 }

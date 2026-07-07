@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { errorResponse } from '@/lib/api-error'
+import { getPhotos } from '@/lib/photos'
 
 /**
  * GET /api/github/photos
@@ -15,45 +17,10 @@ export async function GET() {
   }
 
   try {
-    const owner = process.env.GITHUB_OWNER
-    const repo = process.env.GITHUB_REPO
-
-    if (!owner || !repo) {
-      return NextResponse.json(
-        { error: 'GitHub configuration missing' },
-        { status: 500 }
-      )
-    }
-
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/_data/photos.json`,
-      {
-        headers: {
-          'Authorization': `Bearer ${session.accessToken}`,
-          'Accept': 'application/vnd.github+json',
-        }
-      }
-    )
-
-    if (!response.ok) {
-      // Return empty array if photos.json doesn't exist yet
-      if (response.status === 404) {
-        return NextResponse.json({ photos: [], sha: null })
-      }
-      throw new Error(`Failed to fetch photos: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const content = Buffer.from(data.content, 'base64').toString('utf-8')
-    const photos = JSON.parse(content)
-
-    return NextResponse.json({ photos, sha: data.sha })
-  } catch (error: any) {
-    console.error('Failed to fetch photos:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch photos' },
-      { status: 500 }
-    )
+    const data = await getPhotos(session.accessToken)
+    return NextResponse.json(data)
+  } catch (error) {
+    return errorResponse(error, 'Failed to fetch photos')
   }
 }
 

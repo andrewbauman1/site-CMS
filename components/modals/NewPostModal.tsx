@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import {
   Dialog,
@@ -16,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { Maximize2, Minimize2 } from 'lucide-react'
+import { usePostForm } from '@/hooks/usePostForm'
 
 const MDEditor = dynamic(
   () => import('@uiw/react-md-editor'),
@@ -29,25 +29,19 @@ interface NewPostModalProps {
 }
 
 export function NewPostModal({ isOpen, onClose, onSuccess }: NewPostModalProps) {
-  const { data: session } = useSession()
+  const form = usePostForm()
+  const {
+    title, setTitle,
+    content, setContent,
+    tags, setTags,
+    layout, setLayout,
+    featured, setFeatured,
+    postDate, setPostDate,
+    loading,
+    resetForm,
+  } = form
 
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [tags, setTags] = useState('')
-  const [layout, setLayout] = useState('default')
-  const [featured, setFeatured] = useState(false)
-  const [postDate, setPostDate] = useState(new Date())
-  const [loading, setLoading] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
-
-  const resetForm = () => {
-    setTitle('')
-    setContent('')
-    setTags('')
-    setLayout('default')
-    setFeatured(false)
-    setPostDate(new Date())
-  }
 
   const handleClose = () => {
     resetForm()
@@ -55,75 +49,24 @@ export function NewPostModal({ isOpen, onClose, onSuccess }: NewPostModalProps) 
   }
 
   const handleSaveDraft = async () => {
-    if (!title.trim() && !content.trim()) {
-      alert('Please enter at least a title or content')
-      return
-    }
-
-    setLoading(true)
     try {
-      const response = await fetch('/api/drafts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'POST',
-          title,
-          content,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean).join(','),
-          language: layout
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to save draft')
-      }
-
+      await form.saveDraft()
       alert('Draft saved successfully!')
-      resetForm()
       onSuccess?.()
       onClose()
     } catch (error: any) {
       alert(`Error: ${error.message}`)
-    } finally {
-      setLoading(false)
     }
   }
 
   const handlePublish = async () => {
-    if (!title.trim() || !content.trim()) {
-      alert('Please enter title and content')
-      return
-    }
-
-    setLoading(true)
     try {
-      const response = await fetch('/api/publish/post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          content,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-          date: postDate,
-          layout,
-          feature: featured ? 1 : undefined
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to publish post')
-      }
-
+      await form.publish()
       alert('Post published successfully!')
-      resetForm()
       onSuccess?.()
       onClose()
     } catch (error: any) {
       alert(`Error: ${error.message}`)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -243,7 +186,7 @@ export function NewPostModal({ isOpen, onClose, onSuccess }: NewPostModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto note-panel">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>

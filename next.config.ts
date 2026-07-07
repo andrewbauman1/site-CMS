@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'imagedelivery.net', pathname: '/**' },
+      { protocol: 'https', hostname: '*.cloudflarestream.com', pathname: '/**' },
+    ],
+  },
 };
 
 export default nextConfig;
