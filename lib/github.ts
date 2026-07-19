@@ -48,7 +48,7 @@ export async function publishPost(
   const inputs: Record<string, string> = {
     title: post.title || 'Untitled',
     content: post.content || '',
-    date: post.date.toISOString().split('T')[0],
+    date: new Date(post.date).toISOString().split('T')[0],
     layout: post.layout || 'default'
   }
 
